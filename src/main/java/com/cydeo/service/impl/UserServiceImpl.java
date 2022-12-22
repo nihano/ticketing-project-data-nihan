@@ -59,7 +59,24 @@ public class UserServiceImpl implements UserService {
         //save the updated user in the DB
         userRepository.save(convertedUser);
 
-        return findByUserName(user.getUserName());
+        return findByUserName(user.getUserName());// this will be needed for security for now we could have done the method void as well
+        //we used this method because we are returning what is saved in DB
+    }
 
+    @Override
+    public void delete(String username) {
+        //go to DB and get that user with username
+        //change the isDeleted field to true
+        //save the object in the db
+        User user = userRepository.findByUserName(username);
+        user.setIsDeleted(true);
+        userRepository.save(user);
+
+    }
+
+    @Override
+    public List<UserDTO> listAllByRole(String role) {
+       List<User> users = userRepository.findByRoleDescriptionIgnoreCase(role);
+       return users.stream().map(userMapper::convertToDTO).collect(Collectors.toList());
     }
 }
