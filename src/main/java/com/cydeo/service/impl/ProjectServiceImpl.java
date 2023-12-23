@@ -9,7 +9,9 @@ import com.cydeo.mapper.ProjectMapper;
 import com.cydeo.mapper.UserMapper;
 import com.cydeo.repository.ProjectRepository;
 import com.cydeo.service.ProjectService;
+import com.cydeo.service.TaskService;
 import com.cydeo.service.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +25,15 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final TaskService taskService;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, UserService userService, UserMapper userMapper) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, UserService userService, UserMapper userMapper, TaskService taskService) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.taskService = taskService;
     }
-
 
     @Override
     public ProjectDTO getByProjectCode(String code) {
@@ -40,7 +43,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ProjectDTO> listAllProjects() {
+
         List<Project> list = projectRepository.findAll(Sort.by("projectCode"));
+
         return list.stream().map(projectMapper::convertToDTO).collect(Collectors.toList());
     }
 
@@ -61,26 +66,24 @@ public class ProjectServiceImpl implements ProjectService {
 
         convertedProject.setId(project.getId());
 
-        convertedProject.setProjectStatus(project.getProjectStatus());//status is not in the form that's why we set here
+        convertedProject.setProjectStatus(project.getProjectStatus());
 
         projectRepository.save(convertedProject);
-
-
-
 
 
     }
 
     @Override
     public void delete(String code) {
+
         Project project = projectRepository.findByProjectCode(code);
         project.setIsDeleted(true);
         projectRepository.save(project);
-
     }
 
     @Override
     public void complete(String projectCode) {
+
         Project project = projectRepository.findByProjectCode(projectCode);
         project.setProjectStatus(Status.COMPLETE);
         projectRepository.save(project);
@@ -88,18 +91,23 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ProjectDTO> listAllProjectDetails() {
-        //our aim is to get all the projects assigned to manager login in the system from DB
+
         UserDTO currentUserDTO = userService.findByUserName("harold@manager.com");
         User user = userMapper.convertToEntity(currentUserDTO);
+
         List<Project> list = projectRepository.findAllByAssignedManager(user);
 
-        return list.stream().map(project -> {
-            ProjectDTO obj = projectMapper.convertToDTO(project);
 
-            obj.setUnfinishedTaskCounts(3);
-            obj.setCompleteTaskCounts(5);
-            return obj;
-        }
+        return list.stream().map(project -> {
+
+                    ProjectDTO obj = projectMapper.convertToDTO(project);
+
+                    obj.setUnfinishedTaskCounts(taskService.totalNonCompletedTask(project.getProjectCode()));
+                    obj.setCompleteTaskCounts(taskService.totalCompletedTask(project.getProjectCode()));
+
+                    return obj;
+                }
+
         ).collect(Collectors.toList());
     }
 }
