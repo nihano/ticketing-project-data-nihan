@@ -66,6 +66,9 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.save(convertedProject);
 
 
+
+
+
     }
 
     @Override
@@ -90,9 +93,13 @@ public class ProjectServiceImpl implements ProjectService {
         User user = userMapper.convertToEntity(currentUserDTO);
         List<Project> list = projectRepository.findAllByAssignedManager(user);
 
+        return list.stream().map(project -> {
+            ProjectDTO obj = projectMapper.convertToDTO(project);
 
-
-
-        return null;
+            obj.setUnfinishedTaskCounts(3);
+            obj.setCompleteTaskCounts(5);
+            return obj;
+        }
+        ).collect(Collectors.toList());
     }
 }
