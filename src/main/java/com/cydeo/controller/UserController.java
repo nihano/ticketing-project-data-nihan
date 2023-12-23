@@ -1,14 +1,13 @@
 package com.cydeo.controller;
 
 import com.cydeo.dto.UserDTO;
+import com.cydeo.repository.UserRepository;
 import com.cydeo.service.RoleService;
 import com.cydeo.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/user")
@@ -17,7 +16,9 @@ public class UserController {
     private final RoleService roleService;
     private final UserService userService;
 
-    public UserController(RoleService roleService, UserService userService) {
+
+
+    public UserController(RoleService roleService, UserService userService, UserRepository userRepository) {
         this.roleService = roleService;
         this.userService = userService;
     }
@@ -46,6 +47,7 @@ public class UserController {
         }
 
         userService.save(user);
+
 
         return "redirect:/user/create";
 
