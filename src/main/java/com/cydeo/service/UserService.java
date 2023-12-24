@@ -12,7 +12,7 @@ public interface UserService {
     //Why username parameter not id because we will use this for example in update and when we click update button we will see username not id. UI will see DTO so also USerDTO does not have id. Then, we will move the information to DB with primary key.
     UserDTO findByUserName(String username);
     void save(UserDTO user);
-    void deleteByUserName(String username);
+//    void deleteByUserName(String username);
     UserDTO update(UserDTO user);
     void delete(String username);
     List<UserDTO> listAllByRole(String role);
